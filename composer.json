@@ -1,0 +1,27 @@
+{
+    "name": "iziedev/signer",
+    "description": "PDF Document Electronic Signer",
+    "type": "library",
+    "license": "MIT",
+    "minimum-stability": "dev",
+    "authors": [
+        {
+            "name": "Pande Putu Widya Oktapratama",
+            "email": "widya.oktapratama@gmail.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Iziedev\\Signer\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Iziedev\\Signer\\SignerServiceProvider"
+            ],
+            "aliases": {}
+        }
+    }
+}
