@@ -21,7 +21,9 @@
             "providers": [
                 "Iziedev\\Signer\\SignerServiceProvider"
             ],
-            "aliases": {}
+            "aliases": {
+                "Signer": "Iziedev\\Signer\\Facades\\Signer"
+            }
         }
     }
 }
