@@ -6,6 +6,26 @@ return [
      * 
      */
     'output_directory' => null,
+    /**
+     * For now just support for PKCS12
+     * and willbe support for others keystore type
+     * - BCPKCS12
+     * - BKS
+     * - BKS-V1
+     * - BOUNCYCASTLE
+     * - CASEEXACTJKS
+     * - CloudFoxy
+     * - DKS
+     * - JCEKS
+     * - JKS
+     * - KEYCHAINSTORE
+     * - PKCS12-3DES-3DES
+     * - PKCS12-3DES-40RC2
+     * - PKCS12-DEF
+     * - PKCS12-DEF-3DES-3DES
+     * - PKCS12-DEF-3DES-40RC2
+     * 
+     */
     'keystore_type' => env('SIGNER_KEYSTORE_TYPE', 'PKCS12'),
     'keystore_file' => env('SIGNER_KEYSTORE_FILE', null),
     'keystore_passphrase' => env('SIGNER_KEYSTORE_PASSPHRASE', null),

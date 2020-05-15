@@ -3,7 +3,14 @@
 namespace Iziedev\Signer;
 
 use Exception;
+use Iziedev\Signer\Exceptions\CounterPluginNotExistsException;
+use Iziedev\Signer\Exceptions\FailedOpenPKCS12KeystoreException;
+use Iziedev\Signer\Exceptions\InputPdfFileNotFoundException;
 use Iziedev\Signer\Exceptions\JavaNotInstalledException;
+use Iziedev\Signer\Exceptions\KeystoreFileNotFoundException;
+use Iziedev\Signer\Exceptions\KeystoreNotLoadedException;
+use Iziedev\Signer\Exceptions\SignerPluginNotExistsException;
+use Iziedev\Signer\Exceptions\VerifierPluginNotExistsException;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
@@ -18,6 +25,14 @@ use Symfony\Component\Process\Process;
  */
 class Signer
 {
+    /**
+     * Constant signer type
+     * 
+     */
+    const SIGNER = 1;
+    const VERIFIER = 2;
+    const COUNTER = 3;
+
     /**
      * Signer plugin path
      * 
@@ -88,7 +103,7 @@ class Signer
     protected function checkSignerPath()
     {
         if (!file_exists($this->signerPluginPath)) {
-            throw new Exception("File not exists {$this->signerPluginPath}", 2);
+            throw new SignerPluginNotExistsException();
         }
     }
 
@@ -101,7 +116,7 @@ class Signer
     protected function checkCounterPath()
     {
         if (!file_exists($this->counterPluginPath)) {
-            throw new Exception("File not exists {$this->counterPluginPath}", 3);
+            throw new CounterPluginNotExistsException();
         }
     }
 
@@ -114,7 +129,7 @@ class Signer
     protected function checkVerifierPath()
     {
         if (!file_exists($this->verifierPluginPath)) {
-            throw new Exception("File not exists {$this->verifierPluginPath}", 4);
+            throw new VerifierPluginNotExistsException();
         }
     }
 
@@ -127,12 +142,18 @@ class Signer
     protected function checkCertificate()
     {
         $info = [];
+        if (!file_exists($this->config['keystore_file'])) {
+            throw new KeystoreFileNotFoundException($this->config['keystore_file']);
+        }
+
         $source = file_get_contents($this->config['keystore_file']);
         if (!$source) {
-            throw new Exception("Cannot read file certificate {$this->certificatePath}", 7);
+            throw new KeystoreNotLoadedException();
         }
+
+        //TODO: Add statement for other keystore type
         if (!openssl_pkcs12_read($source, $info, $this->config['keystore_passphrase'])) {
-            throw new Exception("Cannot open file certificate, maybe wrong passhrase", 8);
+            throw new FailedOpenPKCS12KeystoreException();
         }
     }
 
@@ -147,7 +168,7 @@ class Signer
             'java',
             '-jar ' . $this->signerPluginPath,
             implode(' ', $this->inputPath),
-            "-kst " . $this->config['keystore_type'],
+            "-kst PKCS12",
             '-ksf ' . $this->config['keystore_file'],
             '-ksp ' . $this->config['keystore_passphrase'],
             '-ha ' . $this->config['hash_algorithm'],
@@ -194,7 +215,7 @@ class Signer
     public function input($pdfPath)
     {
         if (!file_exists($pdfPath)) {
-            throw new Exception("File pdf not found {$pdfPath}", 5);
+            throw new InputPdfFileNotFoundException($pdfPath);
         }
         $this->inputPath[] = $pdfPath;
         return $this;
@@ -209,7 +230,7 @@ class Signer
     public function certificate($certificatePath)
     {
         if (!file_exists($certificatePath)) {
-            throw new Exception("Certificate not found {$certificatePath}", 6);
+            throw new KeystoreFileNotFoundException($certificatePath);
         }
         $this->config['keystore_file'] = $certificatePath;
         return $this;
@@ -278,5 +299,27 @@ class Signer
         $output = null;
         exec(implode(' ', $command), $output, $re);
         dd($output);
+    }
+
+    /**
+     * Run direct command to signing plugin
+     * 
+     * @param array $commands
+     * @param int $plugin
+     * @return array
+     */
+    public function command(array $commands, $plugin = self::SIGNER)
+    {
+        $choosePlugin = $this->signerPluginPath;
+        if ($plugin == 2) {
+            $choosePlugin = $this->verifierPluginPath;
+        } else if ($plugin == 3) {
+            $choosePlugin = $this->counterPluginPath;
+        }
+
+        $stringCommand = "java -jar {$choosePlugin} " . implode(' ', array_filter($commands));
+        $output = null;
+        exec($stringCommand, $output);
+        return $output;
     }
 }
