@@ -1,6 +1,10 @@
 <?php
 
 return [
+    /**
+     * Set the output signed directory
+     * 
+     */
     'output_directory' => null,
     'keystore_type' => env('SIGNER_KEYSTORE_TYPE', 'PKCS12'),
     'keystore_file' => env('SIGNER_KEYSTORE_FILE', null),

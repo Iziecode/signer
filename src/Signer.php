@@ -3,28 +3,71 @@
 namespace Iziedev\Signer;
 
 use Exception;
-use Illuminate\Support\Facades\File;
+use Iziedev\Signer\Exceptions\JavaNotInstalledException;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
+/**
+ * Base class signer
+ * 
+ * This class provide basic command using JSignPdf
+ * 
+ * @package     Iziedev
+ * @subpackage  Signer
+ * @author      pandeptwidyaop <widya.oktapratama@gmail.com>
+ */
 class Signer
 {
-    protected $signerPluginPath = __DIR__ . '/plugins/jsignpdf-1.6.4/JSignPdf.jar';
-    protected $counterPluginPath = __DIR__ . '/plugins/jsignpdf-1.6.4/SignatureCounter.jar';
-    protected $verifierPluginPath = __DIR__ . '/plugins/jsignpdf-1.6.4/Verifier.jar';
+    /**
+     * Signer plugin path
+     * 
+     * @var string
+     */
+    protected $signerPluginPath = __DIR__ . '/../plugins/jsignpdf-1.6.4/JSignPdf.jar';
 
+    /**
+     * Counter plugin path
+     * 
+     * @var string
+     */
+    protected $counterPluginPath = __DIR__ . '/../plugins/jsignpdf-1.6.4/SignatureCounter.jar';
+
+    /**
+     * Pdf signer verification plugin
+     * 
+     * @var string
+     */
+    protected $verifierPluginPath = __DIR__ . '/../plugins/jsignpdf-1.6.4/Verifier.jar';
+
+    /**
+     * All configure signing
+     * 
+     * @var array
+     */
     protected $config = [];
 
-    protected $inputPath;
-    protected $passphrase;
-    protected $outputPath;
-    protected $certificatePath;
+    /**
+     * Pdf's path will signing
+     * 
+     * @var array
+     */
+    protected $inputPath = [];
 
+    /**
+     * Class constructor
+     * 
+     */
     public function __construct()
     {
         $this->config = config('signer');
     }
 
+    /**
+     * Validate java installed on machine
+     * 
+     * @return void
+     * @throws \Iziedev\Signer\Exceptions\JavaNotInstalledException
+     */
     protected function checkJavaInstalled()
     {
         $process = new Process(['java', '--version']);
@@ -32,10 +75,16 @@ class Signer
         try {
             $process->mustRun();
         } catch (ProcessFailedException $exception) {
-            throw new Exception('Java is not installed on this computer, please install JDK', 1);
+            throw new JavaNotInstalledException();
         }
     }
 
+    /**
+     * Validate signer plugins path is valid
+     * 
+     * @return void
+     * @throws Exception If plugins not available on given path
+     */
     protected function checkSignerPath()
     {
         if (!file_exists($this->signerPluginPath)) {
@@ -43,6 +92,12 @@ class Signer
         }
     }
 
+    /**
+     * Validate counter plugins path is valid
+     * 
+     * @return void
+     * @throws Exception If plugins not available on given path
+     */
     protected function checkCounterPath()
     {
         if (!file_exists($this->counterPluginPath)) {
@@ -50,6 +105,12 @@ class Signer
         }
     }
 
+    /**
+     * Validate verifier plugins path is valid
+     * 
+     * @return void
+     * @throws Exception If plugins not available on given path
+     */
     protected function checkVerifierPath()
     {
         if (!file_exists($this->verifierPluginPath)) {
@@ -57,7 +118,13 @@ class Signer
         }
     }
 
-    public function checkCertificate()
+    /**
+     * Validate keystore is available and passphrase is right
+     * 
+     * @return void
+     * @throws Exception If cannot keystore file cannot oppened and keystore can't openned
+     */
+    protected function checkCertificate()
     {
         $info = [];
         $source = file_get_contents($this->config['keystore_file']);
@@ -69,48 +136,20 @@ class Signer
         }
     }
 
-    public function input($pdfPath)
+    /**
+     * Generate plugin signer command with config
+     * 
+     * @return string`
+     */
+    protected function generateCommand()
     {
-        if (!file_exists($pdfPath)) {
-            throw new Exception("File pdf not found {$pdfPath}", 5);
-        }
-        $this->inputPath = $pdfPath;
-        return $this;
-    }
-
-    public function certificate($certificatePath)
-    {
-        if (!file_exists($certificatePath)) {
-            throw new Exception("Certificate not found {$certificatePath}", 6);
-        }
-        $this->config['keystore_file'] = $certificatePath;
-        return $this;
-    }
-
-    public function passphrase($passphrase)
-    {
-        $this->config['keystore_passphrase'] = $passphrase;
-        return $this;
-    }
-
-    public function outputDirectory($dir)
-    {
-        $this->config['output_directory'] = $dir;
-        return $this;
-    }
-
-    public function process()
-    {
-        $this->checkJavaInstalled();
-        $this->checkSignerPath();
-        $this->checkCertificate();
-        $command = [
+        $commands = [
             'java',
             '-jar ' . $this->signerPluginPath,
-            $this->inputPath,
+            implode(' ', $this->inputPath),
             "-kst " . $this->config['keystore_type'],
-            '-ksf "' . $this->config['keystore_file'] . '"',
-            '-ksp "' . $this->config['keystore_passphrase'] . '"',
+            '-ksf ' . $this->config['keystore_file'],
+            '-ksp ' . $this->config['keystore_passphrase'],
             '-ha ' . $this->config['hash_algorithm'],
             $this->config['output_directory'] ? '-d ' . $this->config['output_directory'] : '',
             $this->config['output_prefix'] ? '-op ' . $this->config['output_prefix'] : '',
@@ -123,10 +162,95 @@ class Signer
             $this->config['disable_modify_content'] ? '--disable-modify-content' : '',
             $this->config['disable_screen_readers'] ? '--disable-screen-readers' : ''
         ];
-        $output = null;
-        $cmd = implode(' ', array_filter($command));
-        exec($cmd, $output, $return);
-        dd($output);
+
+        return implode(' ', array_filter($commands));
+    }
+
+
+    /**
+     * ----------------------------------------------------------------------------------
+     * Public Access
+     * ----------------------------------------------------------------------------------
+     */
+
+    /**
+     * Raw configure for signing pdf file
+     * 
+     * @param array $config
+     * @return \Iziedev\Signer\Signer
+     */
+    public function config(array $config)
+    {
+        $this->config = array_replace($this->config, $config);
+        return $this;
+    }
+
+    /**
+     * Input path of pdf file will be signing
+     * 
+     * @param string $pdfPath
+     * @return \Iziedev\Signer\Signer
+     */
+    public function input($pdfPath)
+    {
+        if (!file_exists($pdfPath)) {
+            throw new Exception("File pdf not found {$pdfPath}", 5);
+        }
+        $this->inputPath[] = $pdfPath;
+        return $this;
+    }
+
+    /**
+     * Path of certificate or keystore
+     * 
+     * @param string $certificatePath
+     * @return Iziedev\Signer\Signer
+     */
+    public function certificate($certificatePath)
+    {
+        if (!file_exists($certificatePath)) {
+            throw new Exception("Certificate not found {$certificatePath}", 6);
+        }
+        $this->config['keystore_file'] = $certificatePath;
+        return $this;
+    }
+
+    /**
+     * Password / passphrase of keystore file
+     * 
+     * @param string $passphrase
+     * @return \Iziedev\Signer\Signer
+     */
+    public function passphrase($passphrase)
+    {
+        $this->config['keystore_passphrase'] = $passphrase;
+        return $this;
+    }
+
+    /**
+     * Set of pdf signed pdf will ne output
+     * 
+     * @param string $dir
+     * @return \Iziedev\Signer\Signer
+     */
+    public function outputDirectory($dir)
+    {
+        $this->config['output_directory'] = $dir;
+        return $this;
+    }
+
+    /**
+     * Process signing pdf
+     * 
+     * @return boolean
+     */
+    public function process()
+    {
+        $this->checkJavaInstalled();
+        $this->checkSignerPath();
+        $this->checkCertificate();
+        $command = $this->generateCommand();
+        exec($command, $output, $return);
     }
 
     public function info($pathFile)
@@ -145,5 +269,14 @@ class Signer
 
     public function counterInfo($pathFile)
     {
+        $command = [
+            'java',
+            '-jar',
+            $this->counterPluginPath,
+            $pathFile
+        ];
+        $output = null;
+        exec(implode(' ', $command), $output, $re);
+        dd($output);
     }
 }
