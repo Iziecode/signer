@@ -71,7 +71,7 @@ return [
     'reason' => null,
     'tsa_hash_algorithm' => 'SHA256',
     'tsa_server_url' => null,
-    'tsa_authentication' => 'PASSWORD',
+    'tsa_authentication' => null,
     'tsa_user' => '',
     'tsa_password' => '',
     'tsa_policy_oid' => null,

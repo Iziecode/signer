@@ -154,7 +154,7 @@ class Signer
         }
 
         //TODO: Add statement for other keystore type
-        if (!openssl_pkcs12_read($source, $info, $this->config['keystore_passphrase'])) {
+        if (!openssl_pkcs12_read($source, $info, $this->config['keystore_password'])) {
             throw new FailedOpenPKCS12KeystoreException();
         }
     }
@@ -173,7 +173,7 @@ class Signer
             $this->config['append'] ? '--append' : '',
             $this->config['bg_path'] ? '--bg-path ' . $this->config['bg_path'] : '',
             $this->config['bg_scale'] ? '--bg-scale ' . $this->config['bg_scale'] : '',
-            $this->config['certification-level'] ? '--certification-level ' . $this->config['certification_level'] : '',
+            $this->config['certification_level'] ? '--certification-level ' . $this->config['certification_level'] : '',
             $this->config['crl'] ? '--crl' : '',
             $this->config['contact'] ? '--contact ' . $this->config['contact'] : '',
             $this->config['disable_acrobat6_layer_mode'] ? '--disable-acrobat6-layer-mode' : '',
@@ -193,13 +193,37 @@ class Signer
             $this->config['keystore_password'] ? '--keystore-password ' . $this->config['keystore_password'] : '',
             $this->config['key_alias'] ? '--key-alias ' . $this->config['key_alias'] : '',
             $this->config['key_index'] ? '--key-index' . $this->config['key_index'] : '',
-            $this->config['l2_text'] ? '--12-text ' . $this->config['l2_text'] : '',
-            $this->config['l4_text'] ? '--14-text ' . $this->config['l4_text'] : '',
-
+            $this->config['l2_text'] ? '--l2-text ' . $this->config['l2_text'] : '',
+            $this->config['l4_text'] ? '--l4-text ' . $this->config['l4_text'] : '',
+            $this->config['location'] ? '--location ' . $this->config['location'] : '',
+            $this->config['lly'] ? '--lly ' . $this->config['lly'] : '',
+            $this->config['llx'] ? '--llx ' . $this->config['llx'] : '',
             $this->config['output_directory'] ? '-d ' . $this->config['output_directory'] : '',
             $this->config['output_prefix'] ? '-op ' . $this->config['output_prefix'] : '',
             $this->config['output_suffix'] ? '-os ' . $this->config['output_suffix'] : '',
-
+            $this->config['ocsp'] ? '--ocsp' : '',
+            $this->config['ocsp_server_url'] ? '--ocsp-server-url ' . $this->config['ocsp_server_url'] : '',
+            $this->config['owner_password'] ? '--owner-password ' . $this->config['owner_password'] : '',
+            $this->config['page'] ? '--page ' . $this->config['page'] : '',
+            $this->config['print_right'] ? '--print-right ' . $this->config['print_right'] : '',
+            $this->config['proxy_host'] ? '--proxy-host ' . $this->config['print_right'] : '',
+            $this->config['proxy_port'] ? '--proxy-port ' . $this->config['proxy_port'] : '',
+            $this->config['proxy_type'] ? '--proxy-type ' . $this->config['proxy_type'] : '',
+            $this->config['render_mode'] ? '--render-mode ' . $this->config['render_mode'] : '',
+            $this->config['reason'] ? '--reason ' . $this->config['reason'] : '',
+            $this->config['tsa_authentication'] ? '--tsa-authentication ' . $this->config['tsa_authentication'] : '',
+            $this->config['tsa_server_url'] ? '--tsa-server-url ' . $this->config['tsa_server_url'] : '',
+            $this->config['tsa_hash_algorithm'] ? '--tsa-hash-algorithm ' . $this->config['tsa_hash_algorithm'] : '',
+            $this->config['tsa_user'] ? '--tsa-user ' . $this->config['tsa_user'] : '',
+            $this->config['tsa_password'] ? '--tsa_password ' . $this->config['tsa_password'] : '',
+            $this->config['tsa_policy_oid'] ? '--tsa-policy-oid ' . $this->config['tsa_policy_oid'] : '',
+            $this->config['tsa_cert_file'] ? '--tsa-cert-file ' . $this->config['tsa_cert_file'] : '',
+            $this->config['tsa_cert_password'] ? '--tsa-cert-password ' . $this->config['tsa_cert_password'] : '',
+            $this->config['tsa_cert_file_type'] ? '--tsa-cert-file-type ' . $this->config['tsa_cert_file_type'] : '',
+            $this->config['user_password'] ? '--user-password ' . $this->config['user_password'] : '',
+            $this->config['urx'] ? '--urx ' .  $this->config['urx'] : '',
+            $this->config['ury'] ? '--ury ' . $this->config['ury'] : '',
+            $this->config['visible_signature'] ? '--visible-signature' : ''
         ];
 
         $encryptionAvailable = ['NONE', 'CERTIFICATE', 'PASSWORD'];
@@ -233,6 +257,44 @@ class Signer
             throw new PropertyValueNotAvailableException('keystore_type', $this->config['keystore_type'], $keystoreTypeAvailable);
         }
 
+        // if ($this->config['visible_signature']) {
+        //     if (!$this->config['llx']) {
+        //         throw new PropertyRequiredException('llx', 'visible_signature');
+        //     }
+
+        //     if (!$this->config['lly']) {
+        //         throw new PropertyRequiredException('lly', 'visible_signature');
+        //     }
+
+        //     if (!$this->config['urx']) {
+        //         throw new PropertyRequiredException('urx', 'visible_signature');
+        //     }
+
+        //     if (!$this->config['ury']) {
+        //         throw new PropertyRequiredException('ury', 'visible_signature');
+        //     }
+        // }
+
+        if ($this->config['ocsp']) {
+            if (!$this->config['ocsp_server_url']) {
+                throw new PropertyRequiredException('ocsp_server_url', 'ocsp');
+            }
+        }
+
+        $printRightAvailable = ['ALLOW_PRINTING', 'DISALLOW_PRINTING', 'ALLOW_DEGRADED_PRINTING'];
+        if (!in_array($this->config['print_right'], $printRightAvailable)) {
+            throw new PropertyValueNotAvailableException('print_right', $this->config['print_right'], $printRightAvailable);
+        }
+
+        $proxyTypeAvailable = ['DIRECT', 'HTTP', 'SOCKS'];
+        if (!in_array($this->config['proxy_type'], $proxyTypeAvailable)) {
+            throw new PropertyValueNotAvailableException('proxy_type', $this->config['proxy_type'], $proxyTypeAvailable);
+        }
+
+        $renderModeAvailable = ['DESCRIPTION_ONLY', 'GRAPHIC_AND_DESCRIPTION', 'SIGNAME_AND_DESCRIPTION'];
+        if (!in_array($this->config['render_mode'], $renderModeAvailable)) {
+            throw new PropertyValueNotAvailableException('render_mode', $this->config['render_mode'], $renderModeAvailable);
+        }
 
 
         return implode(' ', array_filter($commands));
@@ -300,6 +362,53 @@ class Signer
     }
 
     /**
+     * Set visible sign
+     * 
+     * @return \Iziedev\Signer\Signer
+     */
+    public function visible()
+    {
+        $this->config['visible_signature'] = true;
+        return $this;
+    }
+
+    /**
+     * Lower Left Corner X Axis
+     * 
+     * @param int $position
+     * @return \Iziedev\Signer\Signer;
+     */
+    public function llx(int $position)
+    {
+        $this->config['llx'] = $position;
+        return $this;
+    }
+
+    /**
+     * Lower Left Corner Y Axis
+     * 
+     * @param int $position
+     * @return \Iziedev\Signer\Signer
+     */
+    public function lly(int $position)
+    {
+        $this->config['lly'] = $position;
+        return $this;
+    }
+
+    /**
+     * Upper Righ Corner X Axis
+     * 
+     * @param int $position
+     * @return \Iziedev\Signer\Signer
+     */
+    public function urx(int $position)
+    {
+        $this->config['urx'] = $position;
+        return $this;
+    }
+
+    /**
      * Set of pdf signed pdf will ne output
      * 
      * @param string $dir
@@ -323,6 +432,7 @@ class Signer
         $this->checkCertificate();
         $command = $this->generateCommand();
         exec($command, $output, $return);
+        dd($output);
     }
 
     public function info($pathFile)
