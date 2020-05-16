@@ -9,6 +9,8 @@ use Iziedev\Signer\Exceptions\InputPdfFileNotFoundException;
 use Iziedev\Signer\Exceptions\JavaNotInstalledException;
 use Iziedev\Signer\Exceptions\KeystoreFileNotFoundException;
 use Iziedev\Signer\Exceptions\KeystoreNotLoadedException;
+use Iziedev\Signer\Exceptions\PropertyRequiredException;
+use Iziedev\Signer\Exceptions\PropertyValueNotAvailableException;
 use Iziedev\Signer\Exceptions\SignerPluginNotExistsException;
 use Iziedev\Signer\Exceptions\VerifierPluginNotExistsException;
 use Symfony\Component\Process\Exception\ProcessFailedException;
@@ -160,7 +162,7 @@ class Signer
     /**
      * Generate plugin signer command with config
      * 
-     * @return string`
+     * @return string
      */
     protected function generateCommand()
     {
@@ -168,21 +170,70 @@ class Signer
             'java',
             '-jar ' . $this->signerPluginPath,
             implode(' ', $this->inputPath),
-            "-kst PKCS12",
-            '-ksf ' . $this->config['keystore_file'],
-            '-ksp ' . $this->config['keystore_passphrase'],
-            '-ha ' . $this->config['hash_algorithm'],
-            $this->config['output_directory'] ? '-d ' . $this->config['output_directory'] : '',
-            $this->config['output_prefix'] ? '-op ' . $this->config['output_prefix'] : '',
-            $this->config['output_suffix'] ? '-os ' . $this->config['output_suffix'] : '',
+            $this->config['append'] ? '--append' : '',
+            $this->config['bg_path'] ? '--bg-path ' . $this->config['bg_path'] : '',
+            $this->config['bg_scale'] ? '--bg-scale ' . $this->config['bg_scale'] : '',
+            $this->config['certification-level'] ? '--certification-level ' . $this->config['certification_level'] : '',
+            $this->config['crl'] ? '--crl' : '',
+            $this->config['contact'] ? '--contact ' . $this->config['contact'] : '',
             $this->config['disable_acrobat6_layer_mode'] ? '--disable-acrobat6-layer-mode' : '',
             $this->config['disable_assembly'] ? '--disable-assembly' : '',
             $this->config['disable_copy'] ? '--disable-copy' : '',
             $this->config['disable_fill'] ? '--disable-fill' : '',
             $this->config['disable_modify_annotations'] ? '--disable-modify-annotations' : '',
             $this->config['disable_modify_content'] ? '--disable-modify-content' : '',
-            $this->config['disable_screen_readers'] ? '--disable-screen-readers' : ''
+            $this->config['disable_screen_readers'] ? '--disable-screen-readers' : '',
+            $this->config['encryption'] ? '--encryption ' . $this->config['encryption'] : '',
+            $this->config['encryption_certificate'] ? '--encryption-certificate ' . $this->config['encryption_certificate'] : '',
+            $this->config['font_size'] ? '--font-size ' . $this->config['font_size'] : '',
+            $this->config['hash_algorithm'] ? '--hash-algorithm ' . $this->config['hash_algorithm'] : '',
+            $this->config['img_path'] ? '--img-path ' . $this->config['img_path'] : '',
+            $this->config['keystore_type'] ? '--keystore-type ' . $this->config['keystore_type'] : '',
+            $this->config['keystore_file'] ? '--keystore-file ' . $this->config['keystore_file'] : '',
+            $this->config['keystore_password'] ? '--keystore-password ' . $this->config['keystore_password'] : '',
+            $this->config['key_alias'] ? '--key-alias ' . $this->config['key_alias'] : '',
+            $this->config['key_index'] ? '--key-index' . $this->config['key_index'] : '',
+            $this->config['l2_text'] ? '--12-text ' . $this->config['l2_text'] : '',
+            $this->config['l4_text'] ? '--14-text ' . $this->config['l4_text'] : '',
+
+            $this->config['output_directory'] ? '-d ' . $this->config['output_directory'] : '',
+            $this->config['output_prefix'] ? '-op ' . $this->config['output_prefix'] : '',
+            $this->config['output_suffix'] ? '-os ' . $this->config['output_suffix'] : '',
+
         ];
+
+        $encryptionAvailable = ['NONE', 'CERTIFICATE', 'PASSWORD'];
+        if ($this->config['encryption'] && !in_array($this->config['encryption'], $encryptionAvailable)) {
+            throw new PropertyValueNotAvailableException('encryption', $this->config['encryption'], $encryptionAvailable);
+        }
+
+        if ($this->config['encryption'] == 'CERTIFICATE') {
+            if (!$this->config['encryption_certificate']) {
+                throw new PropertyRequiredException('encryption_certificate', 'encryption = CERTIFICATE');
+            }
+        }
+
+        if ($this->config['encryption'] == 'PASSWORD') {
+            if (!$this->config['user_password']) {
+                throw new PropertyRequiredException('user_password', 'encryption = PASSWORD');
+            }
+
+            if (!$this->config['owner_password']) {
+                throw new PropertyRequiredException('owner_password', 'encryption = PASSWORD');
+            }
+        }
+
+        $hashAlgorithmAvailable = ['SHA1', 'SHA256', 'SHA348', 'SHA512', 'RIPEMD160'];
+        if (!in_array($this->config['hash_algorithm'], $hashAlgorithmAvailable)) {
+            throw new PropertyValueNotAvailableException('hash_algorithm', $this->config['hash_algorithm'], $hashAlgorithmAvailable);
+        }
+
+        $keystoreTypeAvailable = ['BCPKCS12', 'BKS', 'BKS-V1', 'BOUNCYCASTLE', 'CASEEXACTJKS', 'CloudFoxy', 'DKS', 'JCEKS', 'JKS', 'KEYCHAINSTORE', 'PKCS12', 'PKCS12-3DES-40RC2', 'PKCS12-DEF', 'PKCS12-DEF-3DES-3DES', 'PKCS12-DEF-3DES-40RC2'];
+        if ($this->config['keystore_type'] && !in_array($this->config['keystore_type'], $keystoreTypeAvailable)) {
+            throw new PropertyValueNotAvailableException('keystore_type', $this->config['keystore_type'], $keystoreTypeAvailable);
+        }
+
+
 
         return implode(' ', array_filter($commands));
     }
@@ -244,7 +295,7 @@ class Signer
      */
     public function passphrase($passphrase)
     {
-        $this->config['keystore_passphrase'] = $passphrase;
+        $this->config['keystore_password'] = $passphrase;
         return $this;
     }
 
