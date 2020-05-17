@@ -1,7 +1,18 @@
 <?php
 
 return [
-    'append' => true,
+
+    /**
+     * -------------------------------------------------------------------------
+     * General Configuration
+     * -------------------------------------------------------------------------
+     * 
+     */
+    'keystore_type' => env('SIGNER_KEYSTORE_TYPE', 'PKCS12'),
+    'keystore_file' => env('SIGNER_KEYSTORE_FILE', null),
+    'keystore_password' => env('SIGNER_KEYSTORE_PASSPHRASE', null),
+    'key_alias' => null,
+    'append' => false,
     'bg_path' => null,
     'bg_scale' => null,
     'certification_level' => 'CERTIFIED_NO_CHANGES_ALLOWED',
@@ -19,6 +30,24 @@ return [
     'font_size' => 10.0,
     'hash_algorithm' => 'SHA256',
     'img_path' => null,
+    'key_index' => null,
+    'l2_text' => null,
+    'l4_text' => null,
+    'location' => null,
+    'llx' => null,
+    'lly' => null,
+    'output_directory' => null,
+    'output_prefix' => '',
+    'output_suffix' => '_signed',
+    /**
+     * -------------------------------------------------------------------------
+     * TSA & Certificate Revocation
+     * -------------------------------------------------------------------------
+     * 
+     */
+
+
+
 
     /**
      * For now just support for PKCS12
@@ -40,24 +69,15 @@ return [
      * - PKCS12-DEF-3DES-40RC2
      * 
      */
-    'keystore_type' => env('SIGNER_KEYSTORE_TYPE', 'PKCS12'),
-    'keystore_file' => env('SIGNER_KEYSTORE_FILE', null),
-    'keystore_password' => env('SIGNER_KEYSTORE_PASSPHRASE', null),
-    'key_alias' => null,
-    'key_index' => null,
-    'l2_text' => null,
-    'l4_text' => null,
-    'location' => null,
-    'llx' => null,
-    'lly' => null,
+
+
+
 
     /**
      * Set the output signed directory
      * 
      */
-    'output_directory' => null,
-    'output_prefix' => '',
-    'output_suffix' => '_signed',
+
     'ocsp' => false,
     'ocsp_server_url' => null,
     'owner_password' => null,

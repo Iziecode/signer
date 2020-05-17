@@ -257,23 +257,24 @@ class Signer
             throw new PropertyValueNotAvailableException('keystore_type', $this->config['keystore_type'], $keystoreTypeAvailable);
         }
 
-        // if ($this->config['visible_signature']) {
-        //     if (!$this->config['llx']) {
-        //         throw new PropertyRequiredException('llx', 'visible_signature');
-        //     }
+        //This statement currentyl disable
+        if ($this->config['visible_signature'] && false) {
+            if (!$this->config['llx']) {
+                throw new PropertyRequiredException('llx', 'visible_signature');
+            }
 
-        //     if (!$this->config['lly']) {
-        //         throw new PropertyRequiredException('lly', 'visible_signature');
-        //     }
+            if (!$this->config['lly']) {
+                throw new PropertyRequiredException('lly', 'visible_signature');
+            }
 
-        //     if (!$this->config['urx']) {
-        //         throw new PropertyRequiredException('urx', 'visible_signature');
-        //     }
+            if (!$this->config['urx']) {
+                throw new PropertyRequiredException('urx', 'visible_signature');
+            }
 
-        //     if (!$this->config['ury']) {
-        //         throw new PropertyRequiredException('ury', 'visible_signature');
-        //     }
-        // }
+            if (!$this->config['ury']) {
+                throw new PropertyRequiredException('ury', 'visible_signature');
+            }
+        }
 
         if ($this->config['ocsp']) {
             if (!$this->config['ocsp_server_url']) {
@@ -397,7 +398,7 @@ class Signer
     }
 
     /**
-     * Upper Righ Corner X Axis
+     * Upper Right Corner X Axis
      * 
      * @param int $position
      * @return \Iziedev\Signer\Signer
@@ -405,6 +406,18 @@ class Signer
     public function urx(int $position)
     {
         $this->config['urx'] = $position;
+        return $this;
+    }
+
+    /**
+     * Upper Right Corner Y Axis
+     * 
+     * @param int $position
+     * @return \Iziedev\Signer\Signer
+     */
+    public function ury(int $position)
+    {
+        $this->config['ury'] = $position;
         return $this;
     }
 
