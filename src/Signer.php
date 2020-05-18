@@ -5,14 +5,18 @@ namespace Iziedev\Signer;
 use Exception;
 use Iziedev\Signer\Exceptions\CounterPluginNotExistsException;
 use Iziedev\Signer\Exceptions\FailedOpenPKCS12KeystoreException;
+use Iziedev\Signer\Exceptions\HaveSigningFailureException;
 use Iziedev\Signer\Exceptions\InputPdfFileNotFoundException;
 use Iziedev\Signer\Exceptions\JavaNotInstalledException;
 use Iziedev\Signer\Exceptions\KeystoreFileNotFoundException;
 use Iziedev\Signer\Exceptions\KeystoreNotLoadedException;
+use Iziedev\Signer\Exceptions\NoOperationRequestedException;
 use Iziedev\Signer\Exceptions\PropertyRequiredException;
 use Iziedev\Signer\Exceptions\PropertyValueNotAvailableException;
 use Iziedev\Signer\Exceptions\SignerPluginNotExistsException;
+use Iziedev\Signer\Exceptions\SigningFailedException;
 use Iziedev\Signer\Exceptions\VerifierPluginNotExistsException;
+use Iziedev\Signer\Exceptions\WrongCommandException;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
@@ -69,6 +73,13 @@ class Signer
      * @var array
      */
     protected $inputPath = [];
+
+    /**
+     * Return paths
+     * 
+     * @var array
+     */
+    protected $returnPath = [];
 
     /**
      * Class constructor
@@ -363,7 +374,7 @@ class Signer
     }
 
     /**
-     * Set visible sign
+     * Set visible sign$this->config['output_directory']
      * 
      * @return \Iziedev\Signer\Signer
      */
@@ -445,7 +456,52 @@ class Signer
         $this->checkCertificate();
         $command = $this->generateCommand();
         exec($command, $output, $return);
-        dd($output);
+
+        if ($return == 1) {
+            throw new WrongCommandException($output);
+        } else if ($return == 2) {
+            throw new NoOperationRequestedException($output);
+        } else if ($return == 3) {
+            throw new HaveSigningFailureException($output);
+        } else if ($return == 4) {
+            throw new SigningFailedException($output);
+        }
+
+        foreach ($this->inputPath as $path) {
+            $pathArray = explode('/', $path);
+            $currentPath = $pathArray;
+            array_splice($currentPath, count($pathArray) - 1);
+
+            $base = implode('/', $currentPath);
+
+            if ($this->config['output_directory']) {
+                $base = $this->config['output_directory'];
+            }
+
+            $nameFromPath = explode('.', $pathArray[count($pathArray) - 1])[0];
+
+            $filename = $this->config['output_prefix'] . $nameFromPath . $this->config['output_suffix'] . '.pdf';
+
+            $finalPath = $base . '/' . $filename;
+
+            if (!file_exists($finalPath)) {
+                throw new Exception('File not found ' . $finalPath);
+            }
+
+            $this->returnPath[] = $finalPath;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get signed document
+     * 
+     * @return array
+     */
+    public function getOutputPath()
+    {
+        return $this->returnPath;
     }
 
     public function info($pathFile)
