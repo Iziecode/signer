@@ -19,5 +19,9 @@ class SignerServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../config/signer.php' => config('signer.php')
         ], 'signer-config');
+
+        $this->publishes([
+            __DIR__ . '/Handlers/SignerLogHandler.php' => app_path('Handlers/SignerLogHandler.php')
+        ], 'signer-log-handler');
     }
 }

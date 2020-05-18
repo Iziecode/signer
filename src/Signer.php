@@ -210,8 +210,8 @@ class Signer
             $this->config['lly'] ? '--lly ' . $this->config['lly'] : '',
             $this->config['llx'] ? '--llx ' . $this->config['llx'] : '',
             $this->config['output_directory'] ? '-d ' . $this->config['output_directory'] : '',
-            '-op ' . $this->config['output_prefix'],
-            '-os ' . $this->config['output_suffix'],
+            '-op "' . $this->config['output_prefix'] . '"',
+            '-os "' . $this->config['output_suffix'] . '"',
             $this->config['ocsp'] ? '--ocsp' : '',
             $this->config['ocsp_server_url'] ? '--ocsp-server-url ' . $this->config['ocsp_server_url'] : '',
             $this->config['owner_password'] ? '--owner-password ' . $this->config['owner_password'] : '',
@@ -268,7 +268,7 @@ class Signer
             throw new PropertyValueNotAvailableException('keystore_type', $this->config['keystore_type'], $keystoreTypeAvailable);
         }
 
-        //This statement currentyl disable
+        //This statement currently disable
         if ($this->config['visible_signature'] && false) {
             if (!$this->config['llx']) {
                 throw new PropertyRequiredException('llx', 'visible_signature');
@@ -458,7 +458,7 @@ class Signer
         exec($command, $output, $return);
 
         if ($return == 1) {
-            throw new WrongCommandException($output);
+            throw new WrongCommandException($command);
         } else if ($return == 2) {
             throw new NoOperationRequestedException($output);
         } else if ($return == 3) {
