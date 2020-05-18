@@ -528,7 +528,7 @@ class Signer
         ];
         $output = null;
         exec(implode(' ', $command), $output, $re);
-        dd($output);
+        return $output;
     }
 
     /**
