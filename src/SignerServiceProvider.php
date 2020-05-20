@@ -1,21 +1,15 @@
 <?php
 
-namespace Izidev\Signer;
+namespace Iziedev\Signer;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\App;
-use Iziedev\Signer\Signer;
 
 class SignerServiceProvider extends ServiceProvider
 {
     public function register()
     {
-        App::bind('iziedev.signer', function () {
-            return new Signer;
-        });
-
         $this->mergeConfigFrom(
-            __DIR__ . '/config/signer.php',
+            __DIR__ . '/../config/signer.php',
             'signer'
         );
     }
@@ -23,7 +17,11 @@ class SignerServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__ . '/config/signer.php' => config('signer.php')
+            __DIR__ . '/../config/signer.php' => config('signer.php')
         ], 'signer-config');
+
+        $this->publishes([
+            __DIR__ . '/Handlers/SignerLogHandler.php' => app_path('Handlers/SignerLogHandler.php')
+        ], 'signer-log-handler');
     }
 }
