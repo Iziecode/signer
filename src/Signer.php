@@ -226,7 +226,7 @@ class Signer
             $this->config['tsa_server_url'] ? '--tsa-server-url ' . $this->config['tsa_server_url'] : '',
             $this->config['tsa_hash_algorithm'] ? '--tsa-hash-algorithm ' . $this->config['tsa_hash_algorithm'] : '',
             $this->config['tsa_user'] ? '--tsa-user ' . $this->config['tsa_user'] : '',
-            $this->config['tsa_password'] ? '--tsa_password ' . $this->config['tsa_password'] : '',
+            $this->config['tsa_password'] ? '--tsa-password ' . $this->config['tsa_password'] : '',
             $this->config['tsa_policy_oid'] ? '--tsa-policy-oid ' . $this->config['tsa_policy_oid'] : '',
             $this->config['tsa_cert_file'] ? '--tsa-cert-file ' . $this->config['tsa_cert_file'] : '',
             $this->config['tsa_cert_password'] ? '--tsa-cert-password ' . $this->config['tsa_cert_password'] : '',
