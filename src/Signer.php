@@ -98,7 +98,7 @@ class Signer
      */
     protected function checkJavaInstalled()
     {
-        $process = new Process(['java', '--version']);
+        $process = new Process(['java', '-version']);
 
         try {
             $process->mustRun();
