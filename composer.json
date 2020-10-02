@@ -10,7 +10,11 @@
             "email": "widya.oktapratama@gmail.com"
         }
     ],
-    "require": {},
+    "require": {
+        "illuminate/support": "^9.0@dev",
+        "symfony/symfony": "^5.2@dev",
+        "symfony/process": "^5.2@dev"
+    },
     "autoload": {
         "psr-4": {
             "Iziedev\\Signer\\": "src/"
