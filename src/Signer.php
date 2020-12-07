@@ -207,8 +207,8 @@ class Signer
             $this->config['l2_text'] ? '--l2-text ' . $this->config['l2_text'] : '',
             $this->config['l4_text'] ? '--l4-text ' . $this->config['l4_text'] : '',
             $this->config['location'] ? '--location ' . $this->config['location'] : '',
-            $this->config['lly'] ? '--lly ' . $this->config['lly'] : '',
-            $this->config['llx'] ? '--llx ' . $this->config['llx'] : '',
+            $this->config['lly'] ? '--lly "' . $this->config['lly'] . '"' : '',
+            $this->config['llx'] ? '--llx "' . $this->config['llx'] . '"' : '',
             $this->config['output_directory'] ? '-d ' . $this->config['output_directory'] : '',
             '-op "' . $this->config['output_prefix'] . '"',
             '-os "' . $this->config['output_suffix'] . '"',
@@ -232,8 +232,8 @@ class Signer
             $this->config['tsa_cert_password'] ? '--tsa-cert-password ' . $this->config['tsa_cert_password'] : '',
             $this->config['tsa_cert_file_type'] ? '--tsa-cert-file-type ' . $this->config['tsa_cert_file_type'] : '',
             $this->config['user_password'] ? '--user-password ' . $this->config['user_password'] : '',
-            $this->config['urx'] ? '--urx ' .  $this->config['urx'] : '',
-            $this->config['ury'] ? '--ury ' . $this->config['ury'] : '',
+            $this->config['urx'] ? '--urx "' .  $this->config['urx'] . '"' : '',
+            $this->config['ury'] ? '--ury "' . $this->config['ury'] . '"' : '',
             $this->config['visible_signature'] ? '--visible-signature' : ''
         ];
 
@@ -269,7 +269,7 @@ class Signer
         }
 
         //This statement currently disable
-        if ($this->config['visible_signature'] && false) {
+        if ($this->config['visible_signature']) {
             if (!$this->config['llx']) {
                 throw new PropertyRequiredException('llx', 'visible_signature');
             }
@@ -374,6 +374,18 @@ class Signer
     }
 
     /**
+     * Set page to sign
+     * 
+     * @param int $page
+     * @return \Iziedev\Signer\Signer
+     */
+    public function page(int $page)
+    {
+        $this->config['page'] = $page;
+        return $this;
+    }
+
+    /**
      * Set visible sign$this->config['output_directory']
      * 
      * @return \Iziedev\Signer\Signer
@@ -387,10 +399,10 @@ class Signer
     /**
      * Lower Left Corner X Axis
      * 
-     * @param int $position
+     * @param $position
      * @return \Iziedev\Signer\Signer;
      */
-    public function llx(int $position)
+    public function llx($position)
     {
         $this->config['llx'] = $position;
         return $this;
@@ -399,10 +411,10 @@ class Signer
     /**
      * Lower Left Corner Y Axis
      * 
-     * @param int $position
+     * @param $position
      * @return \Iziedev\Signer\Signer
      */
-    public function lly(int $position)
+    public function lly($position)
     {
         $this->config['lly'] = $position;
         return $this;
@@ -414,7 +426,7 @@ class Signer
      * @param int $position
      * @return \Iziedev\Signer\Signer
      */
-    public function urx(int $position)
+    public function urx($position)
     {
         $this->config['urx'] = $position;
         return $this;
@@ -426,9 +438,41 @@ class Signer
      * @param int $position
      * @return \Iziedev\Signer\Signer
      */
-    public function ury(int $position)
+    public function ury($position)
     {
         $this->config['ury'] = $position;
+        return $this;
+    }
+
+
+    /**
+     * Set signature image for visible signature
+     * 
+     * @param string $path Image path
+     * @param int $scale Defines size of background image. Any negative number means, the best-fit algorithm will be used. Zero value means stretch, which fills whole field – it doesn't keep image ratio. Positive value means the multiplicator of original size.
+     * @param string @signatureText Signature text, you can also use placeholders for signature properties (${signer}, ${timestamp}, ${location}, ${reason}, ${contact})
+     * @param string @statusText Status text
+     * @return \Iziedev\Signer\Signer
+     */
+    public function signatureImage($path, $scale = 0, $signatureText = '""', $statusText = '""')
+    {
+        $this->config['bg_path'] = $path;
+        $this->config['l2_text'] = $signatureText;
+        $this->config['l4_text'] = $statusText;
+        $this->config['bg_scale'] = $scale;
+        $this->config['render_mode'] = 'GRAPHIC_AND_DESCRIPTION';
+        return $this;
+    }
+
+    /**
+     * Set signature render mode
+     * 
+     * @param string $render
+     * @return \Iziedev\Signer\Signer
+     */
+    public function renderMode($render = 'GRAPHIC_AND_DESCRIPTION')
+    {
+        $this->config['render_mode'] = $render;
         return $this;
     }
 
@@ -440,6 +484,11 @@ class Signer
      */
     public function outputDirectory($dir)
     {
+        if (!file_exists($dir)) {
+            if (!mkdir($dir, 0755, true)) {
+                throw new Exception("Cannot create directory $dir");
+            }
+        }
         $this->config['output_directory'] = $dir;
         return $this;
     }
@@ -515,7 +564,7 @@ class Signer
 
         $output = null;
         exec(implode(' ', $command), $output, $re);
-        dd($output);
+        return $output;
     }
 
     public function counterInfo($pathFile)
