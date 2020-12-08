@@ -80,6 +80,12 @@ class Signer
      * @var array
      */
     protected $returnPath = [];
+    
+    /**
+     * Last signed document path
+     * @var string
+     */
+    protected $lastSignedPath = null;
 
     /**
      * Class constructor
@@ -536,7 +542,7 @@ class Signer
             if (!file_exists($finalPath)) {
                 throw new Exception('File not found ' . $finalPath);
             }
-
+            $this->lastSignedPath = $finalPath;
             $this->returnPath[] = $finalPath;
         }
 
