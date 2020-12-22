@@ -3,6 +3,7 @@
 namespace Iziedev\Signer;
 
 use Exception;
+use Illuminate\Support\Facades\Log;
 use Iziedev\Signer\Exceptions\CounterPluginNotExistsException;
 use Iziedev\Signer\Exceptions\FailedOpenPKCS12KeystoreException;
 use Iziedev\Signer\Exceptions\HaveSigningFailureException;
@@ -75,15 +76,14 @@ class Signer
     protected $inputPath = [];
 
     /**
-     * Return paths
+     * Return all signed paths
      * 
      * @var array
      */
     protected $returnPath = [];
-    
+
     /**
      * Last signed document path
-     * @var string
      */
     protected $lastSignedPath = null;
 
@@ -348,6 +348,7 @@ class Signer
         if (!file_exists($pdfPath)) {
             throw new InputPdfFileNotFoundException($pdfPath);
         }
+        Log::info($pdfPath);
         $this->inputPath[] = $pdfPath;
         return $this;
     }
@@ -379,12 +380,6 @@ class Signer
         return $this;
     }
 
-    /**
-     * Set page to sign
-     * 
-     * @param int $page
-     * @return \Iziedev\Signer\Signer
-     */
     public function page(int $page)
     {
         $this->config['page'] = $page;
@@ -450,32 +445,16 @@ class Signer
         return $this;
     }
 
-
-    /**
-     * Set signature image for visible signature
-     * 
-     * @param string $path Image path
-     * @param int $scale Defines size of background image. Any negative number means, the best-fit algorithm will be used. Zero value means stretch, which fills whole field – it doesn't keep image ratio. Positive value means the multiplicator of original size.
-     * @param string @signatureText Signature text, you can also use placeholders for signature properties (${signer}, ${timestamp}, ${location}, ${reason}, ${contact})
-     * @param string @statusText Status text
-     * @return \Iziedev\Signer\Signer
-     */
-    public function signatureImage($path, $scale = 0, $signatureText = '""', $statusText = '""')
+    public function signatureImage($path, $scale = 0, $layer2text = '""', $layer4text = '""')
     {
         $this->config['bg_path'] = $path;
-        $this->config['l2_text'] = $signatureText;
-        $this->config['l4_text'] = $statusText;
+        $this->config['l2_text'] = $layer2text;
+        $this->config['l4_text'] = $layer4text;
         $this->config['bg_scale'] = $scale;
         $this->config['render_mode'] = 'GRAPHIC_AND_DESCRIPTION';
         return $this;
     }
 
-    /**
-     * Set signature render mode
-     * 
-     * @param string $render
-     * @return \Iziedev\Signer\Signer
-     */
     public function renderMode($render = 'GRAPHIC_AND_DESCRIPTION')
     {
         $this->config['render_mode'] = $render;
@@ -570,7 +549,7 @@ class Signer
 
         $output = null;
         exec(implode(' ', $command), $output, $re);
-        return $output;
+        dd($output);
     }
 
     public function counterInfo($pathFile)
