@@ -11,9 +11,10 @@
         }
     ],
     "require": {
+        "php": "^8.1",
         "illuminate/support": "^9.0@dev",
-        "symfony/symfony": "^5.2@dev",
-        "symfony/process": "^5.2@dev"
+        "symfony/symfony": "^6.2.0@dev",
+        "symfony/process": "^6.2.0@dev"
     },
     "autoload": {
         "psr-4": {
