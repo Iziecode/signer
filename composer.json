@@ -11,7 +11,7 @@
         }
     ],
     "require": {
-        "illuminate/support": "^8.0@dev",
+        "illuminate/support": "^9.0@dev",
         "symfony/symfony": "^5.2@dev",
         "symfony/process": "^5.2@dev"
     },
